@@ -92,6 +92,20 @@ impl Matrix {
             w: result[3],
         }
     }
+
+    pub fn transpose(&self) -> Self {
+        let mut transposed_matrix = Matrix::new(self.rows, self.cols);
+
+        for i in 0..self.values.len() {
+            for j in 0..self.values[i].len() {
+                transposed_matrix.values[j][i] = self.values[i][j];
+            }
+        }
+
+        transposed_matrix
+    }
+
+    // next chapter: determining determinants
 }
 
 #[cfg(test)]
@@ -131,60 +145,60 @@ mod tests {
 
     #[test]
     fn matrix_equality() {
-        let A = Matrix::from_vec(&vec![
+        let a = Matrix::from_vec(&vec![
             vec![1.0, 2.0, 3.0, 4.0],
             vec![5.0, 6.0, 7.0, 8.0],
             vec![9.0, 8.0, 7.0, 6.0],
             vec![5.0, 4.0, 3.0, 2.0],
         ]);
-        let B = Matrix::from_vec(&vec![
+        let b = Matrix::from_vec(&vec![
             vec![1.0, 2.0, 3.0, 4.0],
             vec![5.0, 6.0, 7.0, 8.0],
             vec![9.0, 8.0, 7.0, 6.0],
             vec![5.0, 4.0, 3.0, 2.0],
         ]);
-        assert!(A.equals(&B));
+        assert!(a.equals(&b));
 
-        let A = Matrix::from_vec(&vec![
+        let a = Matrix::from_vec(&vec![
             vec![1.0, 2.0, 3.0, 4.0],
             vec![5.0, 6.0, 7.0, 8.0],
             vec![9.0, 8.0, 7.0, 6.0],
             vec![5.0, 4.0, 3.0, 2.0],
         ]);
-        let B = Matrix::from_vec(&vec![
+        let b = Matrix::from_vec(&vec![
             vec![2.0, 3.0, 4.0, 5.0],
             vec![6.0, 7.0, 7.0, 8.0],
             vec![9.0, 8.0, 7.0, 6.0],
             vec![5.0, 4.0, 3.0, 2.0],
         ]);
-        assert!(!A.equals(&B));
+        assert!(!a.equals(&b));
     }
 
     #[test]
     fn matrix_multiplication() {
         // Two matrices
-        let A = Matrix::from_vec(&vec![
+        let a = Matrix::from_vec(&vec![
             vec![1.0, 2.0, 3.0, 4.0],
             vec![5.0, 6.0, 7.0, 8.0],
             vec![9.0, 8.0, 7.0, 6.0],
             vec![5.0, 4.0, 3.0, 2.0],
         ]);
-        let B = Matrix::from_vec(&vec![
+        let b = Matrix::from_vec(&vec![
             vec![-2.0, 1.0, 2.0, 3.0],
             vec![3.0, 2.0, 1.0, -1.0],
             vec![4.0, 3.0, 6.0, 5.0],
             vec![1.0, 2.0, 7.0, 8.0],
         ]);
-        let C = Matrix::from_vec(&vec![
+        let c = Matrix::from_vec(&vec![
             vec![20.0, 22.0, 50.0, 48.0],
             vec![44.0, 54.0, 114.0, 108.0],
             vec![40.0, 58.0, 110.0, 102.0],
             vec![16.0, 26.0, 46.0, 42.0],
         ]);
-        assert!(A.multiply_matrix(&B).equals(&C));
+        assert!(a.multiply_matrix(&b).equals(&c));
 
         // Matrix x tuple
-        let A = Matrix::from_vec(&vec![
+        let a = Matrix::from_vec(&vec![
             vec![1.0, 2.0, 3.0, 4.0],
             vec![2.0, 4.0, 4.0, 2.0],
             vec![8.0, 6.0, 4.0, 1.0],
@@ -192,20 +206,40 @@ mod tests {
         ]);
         let b = tuple::Tuple::new(1.0, 2.0, 3.0, 1.0);
         let c = tuple::Tuple::new(18.0, 24.0, 33.0, 1.0);
-        assert!(A.multiply_tuple(&b).equals(&c));
+        assert!(a.multiply_tuple(&b).equals(&c));
     }
 
     #[test]
     fn identity_matrix() {
-        let A = Matrix::from_vec(&vec![
+        let a = Matrix::from_vec(&vec![
             vec![1.0, 2.0, 3.0, 4.0],
             vec![5.0, 6.0, 7.0, 8.0],
             vec![9.0, 8.0, 7.0, 6.0],
             vec![5.0, 4.0, 3.0, 2.0],
         ]);
-        assert!(A.multiply_matrix(&Matrix::identity()).equals(&A));
+        assert!(a.multiply_matrix(&Matrix::identity()).equals(&a));
 
         let a = Tuple::new(1.0, 2.0, 3.0, 4.0);
         assert!(Matrix::identity().multiply_tuple(&a).equals(&a));
+    }
+
+    #[test]
+    fn matrix_transpose() {
+        let mat_a = Matrix::from_vec(&vec![
+            vec![0.0, 9.0, 3.0, 0.0],
+            vec![9.0, 8.0, 0.0, 8.0],
+            vec![1.0, 8.0, 5.0, 3.0],
+            vec![0.0, 0.0, 5.0, 8.0],
+        ]);
+        let mat_b = Matrix::from_vec(&vec![
+            vec![0.0, 9.0, 1.0, 0.0],
+            vec![9.0, 8.0, 8.0, 0.0],
+            vec![3.0, 0.0, 5.0, 5.0],
+            vec![0.0, 8.0, 3.0, 8.0],
+        ]);
+        assert!(mat_a.transpose().equals(&mat_b));
+
+        // identity transposed == identity
+        assert!(Matrix::identity().transpose().equals(&Matrix::identity()));
     }
 }
