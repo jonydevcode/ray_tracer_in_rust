@@ -21,7 +21,7 @@ fn tick(env: &Env, proj: &mut Projectile) {
 }
 
 fn main() {
-    println!("Hello, world!");
+    // println!("Hello, world!");
 
     let position = tuple::Tuple::new_point(0.0, 1.0, 0.0);
     let velocity = tuple::Tuple::new_vector(1.0, 1.8, 0.0)
