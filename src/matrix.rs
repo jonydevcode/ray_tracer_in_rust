@@ -105,7 +105,46 @@ impl Matrix {
         transposed_matrix
     }
 
-    // next chapter: determining determinants
+    pub fn determinant(&self) -> f64 {
+        if self.rows == 2 && self.cols == 2 {
+            let a = self.values[0][0];
+            let b = self.values[0][1];
+            let c = self.values[1][0];
+            let d = self.values[1][1];
+            return a * d - b * c;
+        }
+        return 0.0;
+    }
+
+    pub fn submatrix(&self, row: usize, col: usize) -> Self {
+        let mut new_values = Vec::new();
+
+        for i in 0..self.rows {
+            if i == row {
+                continue;
+            }
+            let left = &self.values[i][0..col];
+            let right = &self.values[i][col + 1..self.cols];
+            let combined = left.iter().chain(right.iter()).cloned().collect();
+            new_values.push(combined);
+        }
+
+        Matrix::from_vec(&new_values)
+    }
+
+    pub fn minor(&self, row: usize, col: usize) -> f64 {
+        let submat = self.submatrix(row, col);
+        submat.determinant()
+    }
+
+    pub fn cofactor(&self, row: usize, col: usize) -> f64 {
+        let minor = self.minor(row, col);
+        if row + col % 2 == 1 {
+            -minor
+        } else {
+            minor
+        }
+    }
 }
 
 #[cfg(test)]
@@ -241,5 +280,92 @@ mod tests {
 
         // identity transposed == identity
         assert!(Matrix::identity().transpose().equals(&Matrix::identity()));
+    }
+
+    #[test]
+    fn determinant2x2() {
+        let mat_a = Matrix::from_vec(&vec![vec![1.0, 5.0], vec![-3.0, 2.0]]);
+        assert!(math_utils::f64_equals(mat_a.determinant(), 17.0));
+    }
+
+    #[test]
+    fn determinant3x3() {
+        let mat_a = Matrix::from_vec(&vec![
+            vec![1.0, 2.0, 6.0],
+            vec![-5.0, 8.0, -4.0],
+            vec![2.0, 6.0, 4.0],
+        ]);
+        assert!(math_utils::f64_equals(mat_a.cofactor(0, 0), 56.0));
+        assert!(math_utils::f64_equals(mat_a.cofactor(0, 1), 12.0));
+        assert!(math_utils::f64_equals(mat_a.cofactor(0, 2), -46.0));
+        assert!(math_utils::f64_equals(mat_a.determinant(), -196.0));
+    }
+
+    #[test]
+    fn determinant4x4() {
+        let mat_a = Matrix::from_vec(&vec![
+            vec![-2.0, -8.0, 3.0, 5.0],
+            vec![-3.0, 1.0, 7.0, 3.0],
+            vec![1.0, 2.0, -9.0, 6.0],
+            vec![-6.0, 7.0, 7.0, -9.0],
+        ]);
+        assert!(math_utils::f64_equals(mat_a.cofactor(0, 0), 690.0));
+        assert!(math_utils::f64_equals(mat_a.cofactor(0, 1), 447.0));
+        assert!(math_utils::f64_equals(mat_a.cofactor(0, 2), 210.0));
+        assert!(math_utils::f64_equals(mat_a.cofactor(0, 3), 51.0));
+        assert!(math_utils::f64_equals(mat_a.determinant(), -4071.0));
+    }
+
+    #[test]
+    fn submatrix() {
+        let mat_a = Matrix::from_vec(&vec![
+            vec![1.0, 5.0, 0.0],
+            vec![-3.0, 2.0, 7.0],
+            vec![0.0, 6.0, -3.0],
+        ]);
+        let mat_b = Matrix::from_vec(&vec![vec![-3.0, 2.0], vec![0.0, 6.0]]);
+
+        assert!(mat_a.submatrix(0, 2).equals(&mat_b));
+
+        let mat_a = Matrix::from_vec(&vec![
+            vec![-6.0, 1.0, 1.0, 6.0],
+            vec![-8.0, 5.0, 8.0, 6.0],
+            vec![-1.0, 0.0, 8.0, 2.0],
+            vec![-7.0, 1.0, -1.0, 1.0],
+        ]);
+        let mat_b = Matrix::from_vec(&vec![
+            vec![-6.0, 1.0, 6.0],
+            vec![-8.0, 8.0, 6.0],
+            vec![-7.0, -1.0, 1.0],
+        ]);
+
+        assert!(mat_a.submatrix(2, 1).equals(&mat_b));
+    }
+
+    #[test]
+    fn minor() {
+        let mat_a = Matrix::from_vec(&vec![
+            vec![3.0, 5.0, 0.0],
+            vec![2.0, -1.0, -7.0],
+            vec![6.0, -1.0, 5.0],
+        ]);
+        let mat_b = mat_a.submatrix(1, 0);
+
+        assert!(math_utils::f64_equals(mat_b.determinant(), 25.0));
+        assert!(math_utils::f64_equals(mat_a.minor(1, 0), 25.0));
+    }
+
+    #[test]
+    fn cofactor() {
+        let mat_a = Matrix::from_vec(&vec![
+            vec![3.0, 5.0, 0.0],
+            vec![2.0, -1.0, -7.0],
+            vec![6.0, -1.0, 5.0],
+        ]);
+
+        assert!(math_utils::f64_equals(mat_a.minor(0, 0), -12.0));
+        assert!(math_utils::f64_equals(mat_a.cofactor(0, 0), -12.0));
+        assert!(math_utils::f64_equals(mat_a.minor(1, 0), 25.0));
+        assert!(math_utils::f64_equals(mat_a.cofactor(1, 0), -25.0));
     }
 }
